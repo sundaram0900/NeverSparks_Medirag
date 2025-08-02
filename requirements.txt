@@ -1,8 +1,12 @@
 streamlit
 langchain
+langchain-community
 chromadb
 sentence-transformers
 PyMuPDF
 ctransformers
 transformers
 torch
+   
+
+
