@@ -15,20 +15,31 @@ CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 100
 
 def load_retriever():
-    """
-    Load the vector database retriever using HuggingFace embeddings and Chroma.
-    """
-    loader = PyPDFLoader(PDF_FILE)
+    from langchain_community.document_loaders import PyPDFLoader
+    from langchain.text_splitter import CharacterTextSplitter
+
+    loader = PyPDFLoader("data.pdf")
     docs = loader.load()
 
-    splitter = CharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+    splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     split_docs = splitter.split_documents(docs)
 
-    embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
-    # Chroma in-memory (no persist_directory!)
-    vectordb = Chroma.from_documents(split_docs, embedding=embeddings)
+    # ❗ Completely in-memory Chroma setup (no persist_directory)
+    vectordb = Chroma.from_documents(
+        documents=split_docs,
+        embedding=embeddings,
+        collection_name="medirag",      # any name is fine
+        client_settings={
+            "chroma_db_impl": "duckdb+parquet",
+            "persist_directory": None,   # don't persist
+            "anonymized_telemetry": False,
+        }
+    )
+
     return vectordb.as_retriever()
+
 
 def load_llm():
     """
