@@ -1,57 +1,41 @@
 # ragpipe.py
 
-import os
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import FAISS  # ✅ Replaces Chroma
-from langchain_community.llms import HuggingFaceHub
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.llms import CTransformers
 from langchain.chains import RetrievalQA
+import os
 
-# Configuration
+DB_DIR = "db"
 EMBED_MODEL = "all-MiniLM-L6-v2"
-PDF_FILE = "data.pdf"
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 100
+MODEL_FILE = os.path.join("models", "TinyLlama-1.1B-Chat-v1.0.Q4_K_M.gguf")
 
 def load_retriever():
-    """
-    Load the vector database retriever using HuggingFace embeddings and FAISS (in-memory).
-    """
-    loader = PyPDFLoader(PDF_FILE)
-    docs = loader.load()
-
-    splitter = CharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
-    split_docs = splitter.split_documents(docs)
-
+   
     embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
-
-    # ✅ FAISS is fully in-memory and cloud-safe
-    vectordb = FAISS.from_documents(split_docs, embedding=embeddings)
+    vectordb = Chroma(
+        persist_directory=DB_DIR,
+        embedding_function=embeddings
+    )
     return vectordb.as_retriever()
 
-from langchain_community.llms import HuggingFaceHub
-
-
 def load_llm():
-    return HuggingFaceHub(
-        repo_id="google/flan-t5-base",
-        task="text2text-generation",  # required task
-        model_kwargs={
-            "temperature": 0.3,
-            "max_length": 512
-        }
+   
+    return CTransformers(
+        model=MODEL_FILE,
+        model_type="llama", 
+        config={
+            'max_new_tokens': 512,
+            'temperature': 0.3,
+            'context_length': 2048
+        },
+        local_files_only=True
     )
 
-
-
 def build_qa_chain():
-    """
-    Build the RetrievalQA chain from LLM and retriever.
-    """
+    
     retriever = load_retriever()
     llm = load_llm()
-
     qa = RetrievalQA.from_chain_type(
         llm=llm,
         retriever=retriever,
