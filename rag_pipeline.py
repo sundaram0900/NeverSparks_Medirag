@@ -17,7 +17,6 @@ def load_retriever():
     """
     embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
     vectordb = Chroma(
-        persist_directory=DB_DIR,
         embedding_function=embeddings
     )
     return vectordb.as_retriever()
