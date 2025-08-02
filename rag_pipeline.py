@@ -30,14 +30,15 @@ def load_retriever():
     vectordb = FAISS.from_documents(split_docs, embedding=embeddings)
     return vectordb.as_retriever()
 
+from langchain_community.llms import HuggingFaceHub
+
 def load_llm():
-    """
-    Load an LLM from Hugging Face Hub via API (cloud-compatible).
-    """
     return HuggingFaceHub(
-        repo_id="google/flan-t5-base",  # You can change this to a different Hugging Face instruct model
-        model_kwargs={"temperature": 0.3, "max_length": 512}
+        repo_id="google/flan-t5-base",       # ✅ Make sure this model is hosted and supports text generation
+        model_kwargs={"temperature": 0.3, "max_length": 512},
+        task="text2text-generation"          # ✅ REQUIRED: Hugging Face inference task
     )
+
 
 def build_qa_chain():
     """
