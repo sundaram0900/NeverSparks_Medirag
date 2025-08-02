@@ -1,0 +1,8 @@
+streamlit
+langchain
+chromadb
+sentence-transformers
+PyMuPDF
+ctransformers
+transformers
+torch

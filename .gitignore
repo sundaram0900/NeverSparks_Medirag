@@ -1,0 +1,33 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.dll
+*.egg-info/
+
+# Virtual environment
+venv/
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Streamlit temp
+.streamlit/
+
+# Model files
+models/
+*.gguf
+
+# Vector DB
+db/
+
+# Logs
+*.log
+logs/
+
+# VS Code settings
+.vscode/
